@@ -9,103 +9,68 @@ Rules:
 - Run tests with: pytest -q
 """
 
+"""Week 12: Monster Hunter Graphs."""
+
 import heapq
 
 
 def build_hunter_map(edges: list[tuple[str, str]]) -> dict[str, list[str]]:
-    """Build an undirected adjacency list from route pairs.
-
-    Each tuple represents a two-way route between two monster sighting
-    locations.
-
-    Args:
-        edges: A list of route pairs, such as
-            [("Old Theater", "Train Station")].
-
-    Returns:
-        A dictionary where each key is a location and each value is a list
-        of neighboring locations.
-
-    Rules:
-        - Add both directions for each route.
-        - Include every location that appears in the input.
-        - Do not duplicate neighbors if the same route appears more than once.
-    """
-    raise NotImplementedError
+    """Build an undirected adjacency list from route pairs."""
+    graph = {}
+    for a, b in edges:
+        if a not in graph:
+            graph[a] = []
+        if b not in graph:
+            graph[b] = []
+        if b not in graph[a]:
+            graph[a].append(b)
+        if a not in graph[b]:
+            graph[b].append(a)
+    return graph
 
 
 def build_weighted_hunter_map(
     edges: list[tuple[str, str, int]]
 ) -> dict[str, dict[str, int]]:
-    """Build an undirected weighted graph from route triples.
-
-    Each tuple represents a two-way route with a positive danger score.
-
-    Args:
-        edges: A list of route triples, such as
-            [("Old Theater", "Train Station", 4)].
-
-    Returns:
-        A nested dictionary where graph[start][end] is the danger score.
-
-    Rules:
-        - Add both directions for each route.
-        - Danger scores must be positive integers.
-        - If danger score is 0 or negative, raise ValueError.
-        - If the same route appears more than once, keep the lowest score.
-    """
-    raise NotImplementedError
+    """Build an undirected weighted graph from route triples."""
+    graph = {}
+    for a, b, score in edges:
+        if score <= 0:
+            raise ValueError(f"Danger score must be positive, got {score}")
+        if a not in graph:
+            graph[a] = {}
+        if b not in graph:
+            graph[b] = {}
+        # Keep the lowest score if the route appears more than once
+        if b not in graph[a] or score < graph[a][b]:
+            graph[a][b] = score
+            graph[b][a] = score
+    return graph
 
 
 def map_summary(graph: dict[str, list[str]]) -> dict[str, int]:
-    """Return the number of locations and undirected routes.
-
-    Args:
-        graph: An undirected adjacency list.
-
-    Returns:
-        A dictionary with:
-            - "locations": number of locations
-            - "routes": number of undirected routes
-
-    Example:
-        {
-            "A": ["B", "C"],
-            "B": ["A"],
-            "C": ["A"],
-        }
-
-        returns {"locations": 3, "routes": 2}
-    """
-    raise NotImplementedError
+    """Return the number of locations and undirected routes."""
+    locations = len(graph)
+    # Each edge is stored twice (both directions), so divide total by 2
+    routes = sum(len(neighbors) for neighbors in graph.values()) // 2
+    return {"locations": locations, "routes": routes}
 
 
 def most_connected_location(graph: dict[str, list[str]]) -> str | None:
-    """Return the location with the most neighbors.
-
-    Args:
-        graph: An undirected adjacency list.
-
-    Returns:
-        The location with the most neighbors.
-        If the graph is empty, return None.
-        If there is a tie, return the alphabetically first location.
-    """
-    raise NotImplementedError
+    """Return the location with the most neighbors."""
+    if not graph:
+        return None
+    # Sort alphabetically first so ties go to the alphabetically first name
+    return max(sorted(graph), key=lambda loc: len(graph[loc]))
 
 
 def priority_hunt_order(reports: list[tuple[int, str]]) -> list[str]:
-    """Return monster sighting locations from most urgent to least urgent.
-
-    Lower priority number means more urgent.
-
-    Args:
-        reports: A list of tuples in the form (priority, location).
-
-    Returns:
-        A list of locations ordered from lowest priority number to highest.
-
-    Requirement:
-        Use heapq.
-    """
-    raise NotImplementedError
+    """Return monster sighting locations from most urgent to least urgent."""
+    heap = []
+    for priority, location in reports:
+        heapq.heappush(heap, (priority, location))
+    result = []
+    while heap:
+        _, location = heapq.heappop(heap)
+        result.append(location)
+    return result
